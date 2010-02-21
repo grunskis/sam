@@ -1,4 +1,5 @@
 import pygame, os, subprocess
+
 from pygame.locals import *
 
 MAME_PATH = "/home/martins/Tools/mame/bin/advmame"
@@ -87,7 +88,6 @@ current = 0
 
 stick = pygame.joystick.Joystick(0)
 stick.init()
-print 'Joystick found: ' + stick.get_name()
 
 draw_menu(MENU, screen, font, current)
 
