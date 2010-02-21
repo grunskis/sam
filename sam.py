@@ -1,5 +1,8 @@
-import pygame, sys, os, commands
+import pygame, os, subprocess
 from pygame.locals import *
+
+MAME_PATH = "/home/martins/Tools/mame/bin/advmame"
+MAME_CFG_PATH = "/home/martins/.advance/advmame.rc"
 
 RESOLUTION = (800, 600)
 
@@ -49,7 +52,7 @@ def event_play(event):
 def input(events, menu, current):
     for event in events:
         if event.type == QUIT: 
-            sys.exit(0)
+            os._exit(0)
         elif event_next(event):
             current += 1
             if current > len(menu)-1:
@@ -62,23 +65,23 @@ def input(events, menu, current):
             return current
         elif event_play(event):
             rom = menu.get(menu.keys()[current])["rom"]
-            commands.getstatusoutput("advmame " + rom)
+            subprocess.call([MAME_PATH, "-cfg", MAME_CFG_PATH, rom])
         elif event.type == KEYDOWN and event.key == K_ESCAPE:
-            sys.exit(0)
-        #else: print event
+            os._exit(0)
 
 pygame.init()
 
 if not pygame.joystick.get_count():
     print "Joystick not found..."
-    sys.exit(0)
+    os._exit(0)
 
 window = pygame.display.set_mode(RESOLUTION)
 pygame.display.set_caption("Simple Arcade Menu")
 screen = pygame.display.get_surface()
 
-font = pygame.font.Font(os.path.join("data", "slkscr.ttf"), 48)
-sound = pygame.mixer.Sound(os.path.join("data", "sound.wav"))
+basedir = os.path.dirname(os.path.abspath(__file__))
+font = pygame.font.Font(os.path.join(basedir, "data", "slkscr.ttf"), 48)
+sound = pygame.mixer.Sound(os.path.join(basedir, "data", "sound.wav"))
 
 current = 0
 
