@@ -7,11 +7,14 @@ MAME_CFG_PATH = "/home/martins/.advance/advmame.rc"
 
 RESOLUTION = (800, 600)
 
-MENU = {
-    "pacman": {"rom": "pacman"},
-    "space invaders": {"rom": "invaddlx"},
-    "super mario": {"rom": "mario"}
-}
+MENU = [
+    {"name": "pacman", "rom": "pacman"},
+    {"name": "space invaders", "rom": "invaddlx"},
+    {"name": "super mario", "rom": "mario"}
+]
+
+def clear(surface):
+    surface.fill(pygame.Color("black"))
 
 def text_surface(font, text, current):
     if current:
@@ -19,15 +22,13 @@ def text_surface(font, text, current):
     return font.render(text, False, pygame.Color("white"))
 
 def draw_menu(menu, screen, font, current):
-    width, height = RESOLUTION
+    width, _ = RESOLUTION
 
-    for option in menu.keys():
-        index = menu.keys().index(option)
+    for index in range(len(menu)):
+        option = MENU[index]["name"]
         text = text_surface(font, option, index == current)
         x = width / 2 - text.get_width() / 2
         screen.blit(text, (x, 100 + 50 * index))
-    
-    pygame.display.update()
 
 def event_next(event):
     if event.type == KEYDOWN and event.key == K_DOWN:
@@ -43,32 +44,50 @@ def event_previous(event):
         return True
     return False
 
-def event_play(event):
+def event_select(event):
     if event.type == KEYDOWN and event.key == K_RETURN:
         return True
     if event.type == JOYBUTTONDOWN and event.button == 0:
         return True
     return False
 
-def input(events, menu, current):
+def event_quit(event):
+    if event.type == QUIT:
+        return True
+    if event.type == KEYDOWN and event.key == K_ESCAPE:
+        return True
+    return False
+
+def input(events):
     for event in events:
-        if event.type == QUIT: 
-            os._exit(0)
+        if event_quit(event):
+            return "quit"
         elif event_next(event):
-            current += 1
-            if current > len(menu)-1:
-                current = 0
-            return current
+            return "move-next"
         elif event_previous(event):
-            current -= 1
-            if current < 0:
-                current = len(menu)-1
-            return current
-        elif event_play(event):
-            rom = menu.get(menu.keys()[current])["rom"]
-            subprocess.call([MAME_PATH, "-cfg", MAME_CFG_PATH, rom])
-        elif event.type == KEYDOWN and event.key == K_ESCAPE:
-            os._exit(0)
+            return "move-previous"
+        elif event_select(event):
+            return "select"
+
+def process(command):
+    global current
+    
+    if command == "quit":
+        os._exit(0)
+    elif command == "move-next":
+        current += 1
+        if current > len(MENU)-1:
+            current = 0
+    elif command == "move-previous":
+        current -= 1
+        if current < 0:
+            current = len(MENU)-1
+    elif command == "select":
+        rom = MENU[current]["rom"]
+        subprocess.call([MAME_PATH, "-cfg", MAME_CFG_PATH, rom])
+        return False
+
+    return True
 
 pygame.init()
 
@@ -77,25 +96,29 @@ if not pygame.joystick.get_count():
     os._exit(0)
 
 window = pygame.display.set_mode(RESOLUTION)
-pygame.display.set_caption("Simple Arcade Menu")
 screen = pygame.display.get_surface()
+
+pygame.display.set_caption("Simple Arcade Menu")
 
 basedir = os.path.dirname(os.path.abspath(__file__))
 font = pygame.font.Font(os.path.join(basedir, "data", "slkscr.ttf"), 48)
 sound = pygame.mixer.Sound(os.path.join(basedir, "data", "sound.wav"))
 
-current = 0
-
 stick = pygame.joystick.Joystick(0)
 stick.init()
 
+current = 0
+
 draw_menu(MENU, screen, font, current)
+pygame.display.flip()
 
 while True:
-    selection = input(pygame.event.get(), MENU, current)
-    if selection != None:
-        current = selection
-        screen.fill(pygame.Color("black")) # clear surface
+    command = input(pygame.event.get())
+
+    if command and process(command):
+        clear(screen)
         draw_menu(MENU, screen, font, current)
+        pygame.display.flip()
         sound.play()
+
     pygame.time.delay(10)
