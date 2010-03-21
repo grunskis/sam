@@ -18,7 +18,7 @@ def draw_menu(menu, screen, font, current):
     for index in range(len(menu)):
         option = menu[index]
         text = text_surface(font, option, index == current)
-        x = width / 2 - text.get_width() / 2
+        x = width / 2.0 - text.get_width() / 2.0
         screen.blit(text, (x, 100 + 50 * index))
 
 def event_next(event):
