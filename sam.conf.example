@@ -1,0 +1,13 @@
+[sam]
+
+# path to mame binary
+mame_path: /home/martins/Tools/mame/bin/advmame
+
+# path to mame config file, comment out to leave empty 
+mame_config: /home/martins/.advance/advmame.rc
+
+# window size (this used only when fullscreen = false)
+resolution: 800x600
+
+# highest possible resolution will be used if fullscreen = true
+fullscreen: false

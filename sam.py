@@ -1,11 +1,11 @@
 import pygame, os, subprocess
 
+import ConfigParser
+
 from pygame.locals import *
 
-MAME_PATH = "/home/martins/Tools/mame/bin/advmame"
-MAME_CFG_PATH = "/home/martins/.advance/advmame.rc"
-
-RESOLUTION = (800, 600)
+MAME_PATH = "advmame"
+MAME_CONFIG = ""
 
 MENU = [
     {"name": "pacman", "rom": "pacman"},
@@ -22,7 +22,7 @@ def text_surface(font, text, current):
     return font.render(text, False, pygame.Color("white"))
 
 def draw_menu(menu, screen, font, current):
-    width, _ = RESOLUTION
+    width = pygame.display.Info().current_w
 
     for index in range(len(menu)):
         option = MENU[index]["name"]
@@ -84,18 +84,35 @@ def process(command):
             current = len(MENU)-1
     elif command == "select":
         rom = MENU[current]["rom"]
-        subprocess.call([MAME_PATH, "-cfg", MAME_CFG_PATH, rom])
+        subprocess.call([MAME_PATH, "-cfg", MAME_CONFIG, rom])
         return False
 
     return True
 
 pygame.init()
 
+config = ConfigParser.SafeConfigParser()
+config.read("sam.conf")
+
 if not pygame.joystick.get_count():
     print "Joystick not found..."
     os._exit(0)
 
-window = pygame.display.set_mode(RESOLUTION)
+MAME_PATH = config.get('sam', 'mame_path')
+MAME_CONFIG = config.get('sam', 'mame_config')
+
+flags = 0
+resolution = tuple(map(int, config.get('sam', 'resolution').split('x')))
+
+if config.getboolean('sam', 'fullscreen'):
+    modes = pygame.display.list_modes()
+    if len(modes) <= 0:
+        print "No supported fullscreen modes found..."
+        os._exit(0)
+    flags = pygame.FULLSCREEN
+    resolution = modes[0]
+
+window = pygame.display.set_mode(resolution, flags)
 screen = pygame.display.get_surface()
 
 pygame.display.set_caption("Simple Arcade Menu")
