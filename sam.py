@@ -7,12 +7,6 @@ from pygame.locals import *
 MAME_PATH = "advmame"
 MAME_CONFIG = ""
 
-MENU = [
-    {"name": "pacman", "rom": "pacman"},
-    {"name": "space invaders", "rom": "invaddlx"},
-    {"name": "super mario", "rom": "mario"}
-]
-
 def clear(surface):
     surface.fill(pygame.Color("black"))
 
@@ -25,7 +19,7 @@ def draw_menu(menu, screen, font, current):
     width = pygame.display.Info().current_w
 
     for index in range(len(menu)):
-        option = MENU[index]["name"]
+        option = menu[index]
         text = text_surface(font, option, index == current)
         x = width / 2 - text.get_width() / 2
         screen.blit(text, (x, 100 + 50 * index))
@@ -69,30 +63,38 @@ def input(events):
         elif event_select(event):
             return "select"
 
-def process(command):
+def process(command, games):
     global current
+
+    menu = games.options('all')
     
     if command == "quit":
         os._exit(0)
     elif command == "move-next":
         current += 1
-        if current > len(MENU)-1:
+        if current > len(menu)-1:
             current = 0
     elif command == "move-previous":
         current -= 1
         if current < 0:
-            current = len(MENU)-1
+            current = len(menu)-1
     elif command == "select":
-        rom = MENU[current]["rom"]
-        subprocess.call([MAME_PATH, "-cfg", MAME_CONFIG, rom])
+        rom = games.get('all', menu[current])
+        if len(MAME_CONFIG) > 0:
+            subprocess.call([MAME_PATH, "-cfg", MAME_CONFIG, rom])
+        else:
+            subprocess.call([MAME_PATH, rom])
         return False
 
     return True
 
 pygame.init()
 
-config = ConfigParser.SafeConfigParser()
+config = ConfigParser.SafeConfigParser({ 'mame_config': '' })
 config.read("sam.conf")
+
+games = ConfigParser.SafeConfigParser()
+games.read("games.conf")
 
 if not pygame.joystick.get_count():
     print "Joystick not found..."
@@ -125,16 +127,17 @@ stick = pygame.joystick.Joystick(0)
 stick.init()
 
 current = 0
+menu = games.options('all')
 
-draw_menu(MENU, screen, font, current)
+draw_menu(menu, screen, font, current)
 pygame.display.flip()
 
 while True:
     command = input(pygame.event.get())
 
-    if command and process(command):
+    if command and process(command, games):
         clear(screen)
-        draw_menu(MENU, screen, font, current)
+        draw_menu(menu, screen, font, current)
         pygame.display.flip()
         sound.play()
 
