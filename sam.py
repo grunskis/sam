@@ -27,14 +27,14 @@ def draw_menu(menu, screen, font, current):
 def event_next(event):
     if event.type == KEYDOWN and event.key == K_DOWN:
         return True
-    if event.type == JOYAXISMOTION and event.axis == 1 and event.value == -1.0:
+    if event.type == JOYAXISMOTION and event.axis == 1 and int(event.value) == -1:
         return True
     return False
 
 def event_previous(event):
     if event.type == KEYDOWN and event.key == K_UP:
         return True
-    if event.type == JOYAXISMOTION and event.axis == 1 and event.value == 1.0:
+    if event.type == JOYAXISMOTION and event.axis == 1 and int(event.value) == 1:
         return True
     return False
 
