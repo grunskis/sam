@@ -64,7 +64,7 @@ def input(events):
             return "select"
 
 def process(command, games):
-    global current
+    global current, flags, resolution
 
     menu = games.options('all')
     
@@ -79,12 +79,19 @@ def process(command, games):
         if current < 0:
             current = len(menu)-1
     elif command == "select":
+        # need to get out of fullscreen to start mame
+        if flags & pygame.FULLSCREEN == pygame.FULLSCREEN:
+            pygame.display.set_mode(resolution, 0)
+
         rom = games.get('all', menu[current])
         if len(MAME_CONFIG) > 0:
             subprocess.call([MAME_PATH, "-cfg", MAME_CONFIG, rom])
         else:
             subprocess.call([MAME_PATH, rom])
-        return False
+
+        # restore fullscreen mode if it was previoudly set
+        if flags & pygame.FULLSCREEN == pygame.FULLSCREEN:
+            pygame.display.set_mode(resolution, flags)
 
     return True
 
