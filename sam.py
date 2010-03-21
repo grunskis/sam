@@ -4,9 +4,6 @@ import ConfigParser
 
 from pygame.locals import *
 
-MAME_PATH = "advmame"
-MAME_CONFIG = ""
-
 def clear(surface):
     surface.fill(pygame.Color("black"))
 
@@ -65,6 +62,7 @@ def input(events):
 
 def process(command, games):
     global current, flags, resolution
+    global mame_path, mame_config
 
     menu = games.options('all')
     
@@ -84,10 +82,10 @@ def process(command, games):
             pygame.display.set_mode(resolution, 0)
 
         rom = games.get('all', menu[current])
-        if len(MAME_CONFIG) > 0:
-            subprocess.call([MAME_PATH, "-cfg", MAME_CONFIG, rom])
+        if len(mame_config) > 0:
+            subprocess.call([mame_path, "-cfg", mame_config, rom])
         else:
-            subprocess.call([MAME_PATH, rom])
+            subprocess.call([mame_path, rom])
 
         # restore fullscreen mode if it was previoudly set
         if flags & pygame.FULLSCREEN == pygame.FULLSCREEN:
@@ -107,8 +105,8 @@ if not pygame.joystick.get_count():
     print "Joystick not found..."
     os._exit(0)
 
-MAME_PATH = config.get('sam', 'mame_path')
-MAME_CONFIG = config.get('sam', 'mame_config')
+mame_path = config.get('sam', 'mame_path')
+mame_config = config.get('sam', 'mame_config')
 
 flags = 0
 resolution = tuple(map(int, config.get('sam', 'resolution').split('x')))
