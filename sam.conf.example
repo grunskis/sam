@@ -3,11 +3,11 @@
 # path to mame binary
 mame_path: /usr/local/mame/bin/advmame
 
-# path to mame config file, comment out to leave empty 
+# path to mame config file, comment out to use the default
 mame_config: /usr/local/mame/etc/advmame.rc
 
-# window size (this used only when fullscreen = false)
+# window size (used only when fullscreen = false)
 resolution: 800x600
 
-# highest possible resolution will be used if fullscreen = true
+# highest possible screen resolution will be used
 fullscreen: false
