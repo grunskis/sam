@@ -143,12 +143,15 @@ pygame.display.flip()
 while True:
     command = input(pygame.event.get())
 
-    if command and process(command, games):
+    if command:
         clear(screen)
+        
+        if process(command, games):
+            sound.play()
+        else:
+            pygame.event.clear()
+            
         draw_menu(menu, screen, font, current)
         pygame.display.flip()
-        sound.play()
-    else:
-        pygame.event.clear()
 
-    pygame.time.delay(200)
+    pygame.time.delay(100)
