@@ -91,6 +91,8 @@ def process(command, games):
         if flags & pygame.FULLSCREEN == pygame.FULLSCREEN:
             pygame.display.set_mode(resolution, flags)
 
+        return False
+
     return True
 
 pygame.init()
@@ -127,6 +129,7 @@ pygame.display.set_caption("Simple Arcade Menu")
 basedir = os.path.dirname(os.path.abspath(__file__))
 font = pygame.font.Font(os.path.join(basedir, "data", "slkscr.ttf"), 48)
 sound = pygame.mixer.Sound(os.path.join(basedir, "data", "sound.wav"))
+sound.set_volume(0.4)
 
 stick = pygame.joystick.Joystick(0)
 stick.init()
@@ -145,5 +148,7 @@ while True:
         draw_menu(menu, screen, font, current)
         pygame.display.flip()
         sound.play()
+    else:
+        pygame.event.clear()
 
-    pygame.time.delay(10)
+    pygame.time.delay(200)
