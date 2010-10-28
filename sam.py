@@ -128,8 +128,11 @@ pygame.display.set_caption("Simple Arcade Menu")
 
 basedir = os.path.dirname(os.path.abspath(__file__))
 font = pygame.font.Font(os.path.join(basedir, "data", "slkscr.ttf"), 48)
-sound = pygame.mixer.Sound(os.path.join(basedir, "data", "sound.wav"))
-sound.set_volume(0.4)
+
+use_sound = config.getboolean('sam', 'use_sound')
+if use_sound:
+    sound = pygame.mixer.Sound(os.path.join(basedir, "data", "sound.wav"))
+    sound.set_volume(0.4)
 
 stick = pygame.joystick.Joystick(0)
 stick.init()
@@ -147,7 +150,8 @@ while True:
         clear(screen)
         
         if process(command, games):
-            sound.play()
+            if use_sound:
+                sound.play()
         else:
             pygame.event.clear()
             

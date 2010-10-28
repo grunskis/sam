@@ -11,3 +11,6 @@ resolution: 800x600
 
 # highest possible screen resolution will be used
 fullscreen: false
+
+# sound?
+use_sound: true
