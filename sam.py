@@ -139,6 +139,7 @@ stick.init()
 
 current = 0
 menu = games.options('all')
+menu.sort()
 
 draw_menu(menu, screen, font, current)
 pygame.display.flip()
