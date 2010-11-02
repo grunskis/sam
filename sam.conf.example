@@ -14,3 +14,5 @@ fullscreen: false
 
 # sound?
 use_sound: true
+
+joystick_required: false

@@ -103,7 +103,8 @@ config.read("sam.conf")
 games = ConfigParser.SafeConfigParser()
 games.read("games.conf")
 
-if not pygame.joystick.get_count():
+joystick_required = config.getboolean('sam', 'joystick_required')
+if joystick_required and not pygame.joystick.get_count():
     print "Joystick not found..."
     os._exit(0)
 
@@ -134,8 +135,12 @@ if use_sound:
     sound = pygame.mixer.Sound(os.path.join(basedir, "data", "sound.wav"))
     sound.set_volume(0.4)
 
-stick = pygame.joystick.Joystick(0)
-stick.init()
+try:
+    stick = pygame.joystick.Joystick(0)
+    stick.init()
+except pygame.error:
+    if joystick_required:
+        os._exit(0)
 
 current = 0
 menu = games.options('all')
