@@ -15,11 +15,15 @@ def text_surface(font, text, current):
 def draw_menu(menu, screen, font, current):
     width = pygame.display.Info().current_w
 
-    for index in range(len(menu)):
+    item_count = len(menu)
+
+    offsety = (pygame.display.Info().current_h / 2.0) - (item_count * 50 / 2.0)
+
+    for index in range(item_count):
         option = menu[index]
         text = text_surface(font, option, index == current)
         x = width / 2.0 - text.get_width() / 2.0
-        screen.blit(text, (x, 100 + 50 * index))
+        screen.blit(text, (x, offsety + 50 * index))
 
 def event_next(event):
     if event.type == KEYDOWN and event.key == K_DOWN:
