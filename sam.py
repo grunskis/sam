@@ -65,6 +65,7 @@ def process(command, games):
     global mame_path, mame_config
 
     menu = games.options('all')
+    menu.sort()
     
     if command == "quit":
         os._exit(0)
