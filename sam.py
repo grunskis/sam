@@ -12,18 +12,15 @@ def text_surface(font, text, current):
         text = "[ " + text + " ]"
     return font.render(text, False, pygame.Color("white"))
 
-def draw_menu(menu, screen, font, current):
+def draw_menu(menu, screen, font, offsety, current):
     width = pygame.display.Info().current_w
 
-    item_count = len(menu)
+    (items, up, down) = menu
 
-    offsety = (pygame.display.Info().current_h / 2.0) - (item_count * 50 / 2.0)
-
-    for index in range(item_count):
-        option = menu[index]
-        text = text_surface(font, option, index == current)
+    for i, item in enumerate(items):
+        text = text_surface(font, item, i == current)
         x = width / 2.0 - text.get_width() / 2.0
-        screen.blit(text, (x, offsety + 50 * index))
+        screen.blit(text, (x, offsety + 50 * i))
 
 def event_next(event):
     if event.type == KEYDOWN and event.key == K_DOWN:
@@ -64,41 +61,18 @@ def input(events):
         elif event_select(event):
             return "select"
 
-def process(command, games):
-    global current, flags, resolution
-    global mame_path, mame_config
+def split(items, first, count):
+    count = min([count, len(items)])
+    last = first + count
 
-    menu = games.options('all')
-    menu.sort()
-    
-    if command == "quit":
-        os._exit(0)
-    elif command == "move-next":
-        current += 1
-        if current > len(menu)-1:
-            current = 0
-    elif command == "move-previous":
-        current -= 1
-        if current < 0:
-            current = len(menu)-1
-    elif command == "select":
-        # need to get out of fullscreen to start mame
-        if flags & pygame.FULLSCREEN == pygame.FULLSCREEN:
-            pygame.display.set_mode(resolution, 0)
+    if len(items[first:last]) < count:
+        first = len(items[first:last])
 
-        rom = games.get('all', menu[current])
-        if len(mame_config) > 0:
-            subprocess.call([mame_path, "-cfg", mame_config, rom])
-        else:
-            subprocess.call([mame_path, rom])
+    up = True if first > 0 else False
+    down = True if last < len(items) else False
+        
+    return (items[first:last], up, down)
 
-        # restore fullscreen mode if it was previoudly set
-        if flags & pygame.FULLSCREEN == pygame.FULLSCREEN:
-            pygame.display.set_mode(resolution, flags)
-
-        return False
-
-    return True
 
 pygame.init()
 
@@ -147,11 +121,16 @@ except pygame.error:
     if joystick_required:
         os._exit(0)
 
-current = 0
 menu = games.options('all')
 menu.sort()
 
-draw_menu(menu, screen, font, current)
+first = 0
+current = 0
+
+per_screen = int(pygame.display.Info().current_h / 50.0) - 2
+offsety = (pygame.display.Info().current_h / 2.0) - (per_screen * 50 / 2.0)
+
+draw_menu(split(menu, first, per_screen), screen, font, offsety, current)
 pygame.display.flip()
 
 while True:
@@ -159,14 +138,41 @@ while True:
 
     if command:
         clear(screen)
-        
-        if process(command, games):
+
+        if command == "move-next" and current < len(menu)-1:
             if use_sound:
                 sound.play()
-        else:
-            pygame.event.clear()
             
-        draw_menu(menu, screen, font, current)
+            current += 1
+            if first + current > per_screen-1:
+                first += 1
+        elif command == "move-previous" and current > 0:
+            if use_sound:
+                sound.play()
+            
+            current -= 1
+            if first > current:
+                first -= 1
+        elif command == "select":
+            pygame.event.clear()
+
+            # need to get out of fullscreen to start mame
+            if flags & pygame.FULLSCREEN == pygame.FULLSCREEN:
+                pygame.display.set_mode(resolution, 0)
+
+            rom = games.get('all', menu[current])
+            if len(mame_config) > 0:
+                subprocess.call([mame_path, "-cfg", mame_config, rom])
+            else:
+                subprocess.call([mame_path, rom])
+
+            # restore fullscreen mode if it was previoudly set
+            if flags & pygame.FULLSCREEN == pygame.FULLSCREEN:
+                pygame.display.set_mode(resolution, flags)
+        elif command == "quit":
+            os._exit(0)
+
+        draw_menu(split(menu, first, per_screen), screen, font, offsety, current - first)
         pygame.display.flip()
 
     pygame.time.delay(100)
